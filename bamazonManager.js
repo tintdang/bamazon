@@ -33,10 +33,10 @@ function menu() {
                 viewProducts();
                 break;
             case "View Low Inventory":
-                console.log("Case 2");
+                lowProducts();
                 break;
             case "Add to Inventory":
-                console.log("Case 3");
+                addInventory();
                 break;
             case "Add New Product":
                 console.log("Case 4");
@@ -61,3 +61,95 @@ function viewProducts() {
         menu();
     })
 }
+
+function lowProducts() {
+    connection.query("SELECT * FROM products", function (err, res) {
+        if (err) throw err;
+
+        // make table, it will only print if it finds any stock
+        var table = new Table({
+            head: ['ID', 'Product Name', 'Department Name', 'Price', 'Stock'],
+            colWidths: [5, 40, 40, 10, 15]
+        });
+
+        // check each stock count
+        for (var i = 0; i < res.length; i++) {
+            var stock = res[i].stock_quantity;
+            if (stock < 5) {
+                // table.push([res[i].item_id, res[i].product_name, res[i].department_name, `$${res[i].price}`, res[i].stock_quantity])
+                table.push([res[i].item_id, res[i].product_name, res[i].department_name, `$${res[i].price}`, res[i].stock_quantity]);
+            }
+        }
+
+        // print if the table has anything its length
+        if (table.length > 0) {
+            console.log(table.toString());
+            // return to menu
+            menu();
+        } else { // if there is nothing low in stock
+            console.log("Nothing is currently low on stock")
+            // return to menu
+            menu();
+        }
+    })
+}
+
+function addInventory() {
+    connection.query("SELECT * FROM products", function (err, res){
+        if (err) throw err;
+        console.log(res)
+
+        // ask the question
+        inquirer.prompt([
+            {
+                name: "item",
+                message: "What item would you like to add inventory to?",
+                type: "input",
+                validate: function(value){
+                    if(parseInt(value) > res.length){
+                        console.log("\nThat is not a valid input, please enter a valid ID number")
+                        return false;
+                    }
+                    else if(!isNaN(value) && (parseInt(value) > 0)){
+                        return true;
+                    }
+                    else{
+                        console.log("\nThat is not a valid input, try again")
+                        return false;
+                    }
+                }
+            }
+        ]).then(function(response){
+            console.log(response.item)
+            // ask how many they would like to add to that inventory
+            inquirer.prompt([{
+                name: "stockIncrease",
+                message: "How many would you like to add?",
+                type: "input",
+                validate: function(value){
+                    if(!isNaN(value) && (parseInt(value) > 0)){
+                        return true;
+                    }
+                    else{
+                        console.log("\nThat is not a valid input, please enter a number")
+                        return false;
+                    }
+                }
+            }]).then(function(answer){
+                var addStock = answer.stockIncrease;
+                connection.query("UPDATE products SET ? WHERE ?", [
+                    {
+                        stock_quantity: (res[parseInt(response.item - 1)].stock_quantity + parseInt(addStock))
+                    },{
+                        item_id: response.item
+                    }
+                ], function(err){
+                    if (err) throw err;
+                    console.log(`You added ${addStock} units of ${res[parseInt(response.item - 1)].product_name},\nReturning to menu...`)
+                    menu();
+                })
+            })
+        })
+    })
+}
+
