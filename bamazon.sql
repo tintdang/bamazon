@@ -14,4 +14,7 @@ PRIMARY KEY (item_id)
 INSERT INTO products(product_name, department_name, price, stock_quantity)
 VALUES("Monster Hunter World", "Video Games", 60, 100),
 	  ("Crazy Rich Asians", "Books", 30, 50),
+	  ("Giant Bag of Trollis", "Food and Drink", 6, 300)
+
+
       
