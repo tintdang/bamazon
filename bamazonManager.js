@@ -23,7 +23,7 @@ function menu() {
             name: "menuOption",
             message: "What would you like to do?",
             type: "list",
-            choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product"]
+            choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product",, "Quit"]
         }
     ]).then(function (response) {
         console.log(response.menuOption);
@@ -40,6 +40,11 @@ function menu() {
             case "Add New Product":
                 addNewProduct();
                 break;
+            case "Quit":
+                console.log("Thanks! Come again!");
+                connection.end();
+                break;
+
         }
     })
 }
